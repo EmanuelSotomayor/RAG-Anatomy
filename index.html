@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RAG Anatomy · Arquitectura de un sistema RAG</title>
+  <meta name="description" content="Guía interactiva de las 4 fases de una arquitectura RAG: chunking, retrieval, augmentation y generation. Componentes, estrategias, algoritmos, fallas y métricas." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cpolygon points='17,3 30,10.5 17,18 4,10.5' fill='%237dd3fc'/%3E%3Cpolygon points='4,10.5 17,18 17,31 4,23.5' fill='%230ea5e9'/%3E%3Cpolygon points='30,10.5 17,18 17,31 30,23.5' fill='%230369a1'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+          <polygon points="17,3 30,10.5 17,18 4,10.5" fill="#7dd3fc" />
+          <polygon points="4,10.5 17,18 17,31 4,23.5" fill="#0ea5e9" />
+          <polygon points="30,10.5 17,18 17,31 30,23.5" fill="#0369a1" />
+        </svg>
+        <div>
+          <strong>RAG Anatomy</strong>
+          <span>Arquitectura RAG completa</span>
+        </div>
+      </div>
+
+      <nav id="nav" aria-label="Fases del pipeline"></nav>
+
+      <div class="side-foot">
+        Atajos<br />
+        <kbd>1</kbd>–<kbd>4</kbd> fases · <kbd>F</kbd>/<kbd>T</kbd>/<kbd>D</kbd>/<kbd>L</kbd> conceptos<br />
+        <kbd>0</kbd> general · <kbd>/</kbd> buscar<br />
+        <span style="opacity:.7">Click en el diagrama · subrayado = glosario al pasar el mouse.</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="search-wrap">
+          <input
+            id="search"
+            type="search"
+            placeholder="Buscar algoritmo, estrategia, falla…"
+            autocomplete="off"
+            aria-label="Buscar en el contenido"
+          />
+          <div id="results" class="results" role="listbox"></div>
+        </div>
+        <button id="theme" class="icon-btn" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+      </header>
+
+      <section class="stage" aria-label="Diagrama del pipeline">
+        <div class="stage-head">
+          <span class="eyebrow">PIPELINE</span>
+          <h1 id="stage-title">El pipeline completo</h1>
+          <p class="stage-sub" id="stage-sub">Cuatro fases · contratos explícitos</p>
+        </div>
+        <div id="diagram"></div>
+      </section>
+
+      <article id="content"></article>
+    </main>
+  </div>
+
+  <div id="term-tip" role="tooltip" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="pages.js"></script>
+  <script src="lab.js"></script>
+  <script src="terms.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
