@@ -44,8 +44,9 @@ Cada fase muestra:
 
 ## Navegación
 
-- **Sidebar**: visión general + 4 fases + 4 páginas conceptuales (Fundamentos, Transversal, Decisiones, LAB).
+- **Sidebar**: orden de lectura en tres bloques: **Empezar** (Visión general, Fundamentos) → **Pipeline** (4 fases) → **Profundizar** (Transversal, Decisiones, LAB).
 - **Diagrama isométrico**: click en cualquier cubo para abrir esa fase.
+- **Pager anterior/siguiente**: sigue la misma secuencia de lectura que el menú.
 - **Subnav sticky** dentro de cada fase/página: contratos, pasos, algoritmos, estrategias, hiperparámetros, fallas, métricas o las secciones conceptuales.
 - **Glosario inline**: los términos técnicos aparecen subrayados; al pasar el mouse (o tocar en móvil) muestran una explicación simple.
 - **Buscador**: indexa todo el contenido (pasos, algoritmos, estrategias, fallas, métricas, glosario y páginas conceptuales). Click en un resultado te lleva a la sección exacta.

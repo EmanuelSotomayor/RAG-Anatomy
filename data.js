@@ -679,6 +679,10 @@ const OVERVIEW = {
   },
   definition:
     "RAG (Retrieval-Augmented Generation) es un pipeline que, sin tocar los pesos del modelo, recupera fragmentos relevantes de una base de conocimiento externa y los inyecta en el contexto del LLM para que genere una respuesta fundamentada en esa información.",
+  definitionTechnical:
+    "El <strong>Retrieval Augmented Generation (RAG)</strong> es una <strong>arquitectura</strong> que, sin re-entrenar el <strong>modelo</strong>, permite recuperar <strong>información relevante</strong> de una <strong>base de conocimiento externa</strong> (memoria <strong>no paramétrica</strong>) y la inyecta en el contexto del <strong>LLM</strong> para que genere una respuesta fundamentada en esa información.",
+  definitionSimple:
+    "<strong>RAG</strong> es darle al <strong>LLM</strong> un <strong>buscador</strong> para que consulte nuestros <strong>documentos</strong> antes de responder.",
   notRag: [
     { label: "Fine-tuning", text: "Recompila el binario: modifica los pesos y el comportamiento. No es una vía confiable para inyectar conocimiento factual." },
     { label: "RAG", text: "Consulta la DB en runtime: el RAG estándar no toca los pesos. La familia RAG incluye variantes que entrenan retriever y/o generador." },

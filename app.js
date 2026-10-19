@@ -40,52 +40,57 @@ function chips(list) {
   return `<div class="chips">${list.map((x) => `<span class="chip">${x}</span>`).join("")}</div>`;
 }
 
-function pager(p) {
-  const i = PHASES.findIndex((x) => x.id === p.id);
-  const prev = PHASES[i - 1];
-  const next = PHASES[i + 1];
-  return `
-    <div class="pager">
-      ${prev ? `<button class="pager-btn" data-go="${prev.id}"><span>← Anterior</span><strong>${prev.name}</strong></button>` : `<button class="pager-btn ghost" data-go="overview"><span>←</span><strong>Visión general</strong></button>`}
-      ${next ? `<button class="pager-btn right" data-go="${next.id}"><span>Siguiente →</span><strong>${next.name}</strong></button>` : `<button class="pager-btn right" data-go="fundamentos"><span>Siguiente →</span><strong>FUNDAMENTOS</strong></button>`}
-    </div>`;
+function readingOrder() {
+  return ["overview", "fundamentos", ...PHASES.map((p) => p.id), "transversal", "decisiones", "lab"];
 }
 
-function pagePager(p) {
-  const i = PAGES.findIndex((x) => x.id === p.id);
-  const prev = PAGES[i - 1];
-  const next = PAGES[i + 1];
+function readingItem(id) {
+  if (id === "overview") return { id: "overview", name: "Visión general", accent: "#38bdf8" };
+  return PHASES.find((p) => p.id === id) || PAGES.find((p) => p.id === id);
+}
+
+function readingPager(id) {
+  const order = readingOrder();
+  const i = order.indexOf(id);
+  const prev = readingItem(order[i - 1] || "overview");
+  const next = readingItem(order[i + 1] || "overview");
+
   return `
     <div class="pager">
-      <button class="pager-btn" data-go="${prev ? prev.id : "overview"}"><span>← ${prev ? "Anterior" : "Volver"}</span><strong>${prev ? prev.name : "Visión general"}</strong></button>
-      <button class="pager-btn right" data-go="${next ? next.id : "overview"}"><span>${next ? "Siguiente" : "Volver"} →</span><strong>${next ? next.name : "Visión general"}</strong></button>
+      <button class="pager-btn" data-go="${prev.id}"><span>← Anterior</span><strong>${prev.name}</strong></button>
+      <button class="pager-btn right" data-go="${next.id}"><span>Siguiente →</span><strong>${next.name}</strong></button>
     </div>`;
 }
 
 /* ---------- navegación ---------- */
 
+function navButton(id) {
+  if (id === "overview") {
+    return `
+      <button class="nav-item" data-view="overview">
+        <span class="nav-num">◎</span>
+        <span class="nav-text"><strong>Visión general</strong><small>Qué es y qué no es RAG</small></span>
+      </button>`;
+  }
+
+  const item = readingItem(id);
+  return `
+    <button class="nav-item" data-view="${item.id}" style="--c:${item.accent}">
+      <span class="nav-num">${item.num}</span>
+      <span class="nav-text"><strong>${item.name}</strong><small>${item.kicker}</small></span>
+    </button>`;
+}
+
 function buildNav() {
   const nav = $("#nav");
   nav.innerHTML = `
-    <button class="nav-item" data-view="overview">
-      <span class="nav-num">◎</span>
-      <span class="nav-text"><strong>Visión general</strong><small>Qué es y qué no es RAG</small></span>
-    </button>
-    ${PHASES.map(
-      (p) => `
-      <button class="nav-item" data-view="${p.id}" style="--c:${p.accent}">
-        <span class="nav-num">${p.num}</span>
-        <span class="nav-text"><strong>${p.name}</strong><small>${p.kicker}</small></span>
-      </button>`
-    ).join("")}
-    <div class="nav-divider"><span>Conceptos</span></div>
-    ${PAGES.map(
-      (p) => `
-      <button class="nav-item" data-view="${p.id}" style="--c:${p.accent}">
-        <span class="nav-num">${p.num}</span>
-        <span class="nav-text"><strong>${p.name}</strong><small>${p.kicker}</small></span>
-      </button>`
-    ).join("")}
+    <div class="nav-divider lead"><span>Empezar</span></div>
+    ${navButton("overview")}
+    ${navButton("fundamentos")}
+    <div class="nav-divider"><span>Pipeline</span></div>
+    ${PHASES.map((p) => navButton(p.id)).join("")}
+    <div class="nav-divider"><span>Profundizar</span></div>
+    ${["transversal", "decisiones", "lab"].map(navButton).join("")}
   `;
 
   $$(".nav-item", nav).forEach((btn) => {
@@ -208,8 +213,18 @@ function renderOverview() {
     ${section(
       "ov-definicion",
       "La definición, sin humo",
-      "Una frase y tres distinciones que evitan el 90% de las confusiones.",
+      "La misma idea en tres registros: frase corta, definición técnica y analogía simple. Después, las distinciones que evitan confusiones.",
       `<div class="definition">${OVERVIEW.definition}</div>
+       <div class="def-grid">
+         <div class="def-card">
+           <span class="def-tag">A nivel técnico</span>
+           <p>${OVERVIEW.definitionTechnical || OVERVIEW.definition}</p>
+         </div>
+         <div class="def-card simple">
+           <span class="def-tag">En palabras simples</span>
+           <p>${OVERVIEW.definitionSimple || "RAG es darle al LLM un buscador para que consulte nuestros documentos antes de responder."}</p>
+         </div>
+       </div>
        <div class="grid-3">
          ${OVERVIEW.notRag
            .map(
@@ -341,21 +356,21 @@ function renderOverview() {
 
     <div class="cta">
       <div>
-        <strong>Empezá por la Fase 1</strong>
-        <p>Ingesta, chunking, embeddings e indexación: donde se decide el techo del sistema.</p>
+        <strong>Empezá por Fundamentos</strong>
+        <p>Definiciones, comparativas y mitos: el marco conceptual antes de entrar al pipeline.</p>
       </div>
-      <button class="btn primary" data-go="chunking">Abrir CHUNKING →</button>
+      <button class="btn primary" data-go="fundamentos">Abrir FUNDAMENTOS →</button>
     </div>
 
     <div class="cta" style="margin-top:14px">
       <div>
-        <strong>Conceptos transversales</strong>
-        <p>Definiciones precisas, evaluación, seguridad, operación y criterios de decisión.</p>
+        <strong>Después del pipeline</strong>
+        <p>Evaluación, seguridad, operación y criterios de decisión para llevar el sistema a producción.</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" data-go="fundamentos">Fundamentos</button>
         <button class="btn" data-go="transversal">Transversal</button>
         <button class="btn" data-go="decisiones">Decisiones</button>
+        <button class="btn" data-go="lab">LAB</button>
       </div>
     </div>
   `;
@@ -565,7 +580,7 @@ function renderPhase(p) {
       </div>`
     )}
 
-    ${pager(p)}
+    ${readingPager(p.id)}
   `;
 }
 
@@ -586,7 +601,7 @@ function renderPage(p) {
 
     ${p.sections.map((s) => section("sec-" + p.id + "-" + s.id, s.title, s.sub, s.html)).join("")}
 
-    ${pagePager(p)}
+    ${readingPager(p.id)}
   `;
 }
 
@@ -684,7 +699,7 @@ function buildSearchIndex() {
   };
 
   // overview
-  add("overview", "General", "#94a3b8", "definicion", "ov-definicion", "Definición de RAG", OVERVIEW.definition);
+  add("overview", "General", "#94a3b8", "definicion", "ov-definicion", "Definición de RAG", strip([OVERVIEW.definition, OVERVIEW.definitionTechnical, OVERVIEW.definitionSimple].join(" ")));
   OVERVIEW.notRag.forEach((x) => add("overview", "General", "#94a3b8", "definicion", "ov-definicion", x.label, x.text));
   OVERVIEW.contracts.forEach((x) => add("overview", "General", "#94a3b8", "contratos", "ov-contratos", x.phase, x.from + " → " + x.to));
   OVERVIEW.priority.forEach((x) => add("overview", "General", "#94a3b8", "prioridad", "ov-prioridad", x.label, x.note));
