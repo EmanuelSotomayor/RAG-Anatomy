@@ -1550,17 +1550,31 @@ html[data-theme="light"] .chip { background: rgba(15, 23, 42, 0.03); }
 
 .formula {
   margin: 12px 0;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid var(--line2);
   border-radius: 10px;
   background: rgba(56, 189, 248, 0.06);
-  color: var(--code);
+  color: var(--text);
   font-family: var(--mono);
-  font-size: 12.5px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.5;
   overflow-x: auto;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
 }
+
+.formula .katex-display { margin: 0; }
+.formula .katex-display > .katex { white-space: normal; }
+.formula .katex { font-size: 1.12em; }
+
+.math {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.math .katex { font-size: 1.1em; }
+.table-wrap .math .katex { font-size: 1.35em; }
 
 .flow-grid {
   display: grid;

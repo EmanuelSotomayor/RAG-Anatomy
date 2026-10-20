@@ -222,9 +222,9 @@ En motores de búsqueda vectorial como **Qdrant, Pinecone, Milvus o pgvector**, 
 
 Es el teorema de Pitágoras generalizado a N dimensiones. Mide la línea recta entre las puntas de dos vectores.
 
-```
-d(A,B) = √( Σ (Aᵢ − Bᵢ)² )
-```
+$$
+d(A,B) = \sqrt{\sum_i (A_i - B_i)^2}
+$$
 
 - **A vs. B:** ≈ **0.094** → muy cercanos, próximo a 0.
 - **A vs. C:** ≈ **3.133** → muy lejanos.
@@ -235,9 +235,9 @@ d(A,B) = √( Σ (Aᵢ − Bᵢ)² )
 
 En vez de medir la distancia entre puntas, mide el **ángulo θ** entre las dos flechas que salen del origen. Es el estándar en NLP porque captura significado sin importar la longitud del texto.
 
-```
-cos(θ) = (A · B) / (‖A‖ ‖B‖)
-```
+$$
+\cos(\theta) = \frac{A \cdot B}{\lVert A \rVert \, \lVert B \rVert}
+$$
 
 - **A vs. B:** ≈ **0.9998** → casi idénticos.
 - **A vs. C:** ≈ **0.1890** → ángulo muy abierto, baja relación.
@@ -249,9 +249,9 @@ cos(θ) = (A · B) / (‖A‖ ‖B‖)
 
 Multiplica coordenada por coordenada y suma todo:
 
-```
-A · B = Σ (Aᵢ × Bᵢ)
-```
+$$
+A \cdot B = \sum_i A_i B_i
+$$
 
 > [!note]
 > **Truco en producción:** cuando los embeddings están **normalizados** —su magnitud ‖A‖ es exactamente 1—, el denominador del coseno se vuelve `1 × 1 = 1`. Entonces el producto punto da exactamente el mismo resultado que la similitud del coseno, y ahorra millones de raíces cuadradas y divisiones en la GPU.

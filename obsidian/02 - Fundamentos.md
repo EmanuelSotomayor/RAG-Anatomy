@@ -204,13 +204,13 @@ Multi-hop controlado, evaluación continua, seguridad, linaje, reindexado y roll
 
 | Métrica | Fórmula | Nota |
 | --- | --- | --- |
-| **Recall@k** | `\|relevantes ∩ top-k\| / \|relevantes\|` | ¿Se escapó el bueno? Es la métrica reina del retrieval. |
-| **Precision@k** | `\|relevantes ∩ top-k\| / k` | ¿Cuánto ruido entra? |
-| **MRR** | `1/\|Q\| · Σ 1/rank_i` | Castiga que el primer acierto esté abajo. |
-| **nDCG** | `DCG / IDCG`, con `DCG = Σ (2^rel_i − 1) / log2(i+1)` | Calidad del orden completo, no solo del top-1. |
-| **Faithfulness** | `claims soportados / claims totales` | Se descompone la respuesta en claims y se verifica cada uno. |
-| **Context precision** | `Σ (precision@k · rel_k) / relevantes` | Premia que los chunks útiles estén arriba. |
-| **Context recall** | `claims de la referencia cubiertos / total` | Requiere ground truth. |
+| **Recall@k** | $\frac{\lvert R \cap \text{top-}k\rvert}{\lvert R\rvert}$ | ¿Se escapó el bueno? Es la métrica reina del retrieval. |
+| **Precision@k** | $\frac{\lvert R \cap \text{top-}k\rvert}{k}$ | ¿Cuánto ruido entra? |
+| **MRR** | $\frac{1}{\lvert Q\rvert}\sum_{i=1}^{\lvert Q\rvert}\frac{1}{\text{rank}_i}$ | Castiga que el primer acierto esté abajo. |
+| **nDCG** | $\frac{DCG}{IDCG}$, con $DCG = \sum_{i=1}^{n}\frac{2^{rel_i}-1}{\log_2(i+1)}$ | Calidad del orden completo, no solo del top-1. |
+| **Faithfulness** | $\frac{\text{claims soportados}}{\text{claims totales}}$ | Se descompone la respuesta en claims y se verifica cada uno. |
+| **Context precision** | $\frac{\sum_k (\text{precision@}k \cdot rel_k)}{\lvert\text{relevantes}\rvert}$ | Premia que los chunks útiles estén arriba. |
+| **Context recall** | $\frac{\text{claims de la referencia cubiertos}}{\text{total}}$ | Requiere ground truth. |
 
 > [!note]
 > Cuidado con el **LLM-as-judge**: no es determinista y tiene sesgos de verbosidad, posición y autopreferencia. Calibrá contra humanos en una muestra antes de confiar en el número.

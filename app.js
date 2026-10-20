@@ -46,6 +46,25 @@ function chips(list) {
   return `<div class="chips">${list.map((x) => `<span class="chip">${x}</span>`).join("")}</div>`;
 }
 
+function renderMath(root) {
+  if (!root || typeof renderMathInElement !== "function") return;
+  try {
+    renderMathInElement(root, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false }
+      ],
+      throwOnError: false,
+      errorColor: "#f59e0b",
+      strict: false,
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "option"]
+    });
+  } catch (error) {
+    console.warn("No se pudo renderizar el contenido LaTeX.", error);
+  }
+}
+
 function readingOrder() {
   return ["overview", "fundamentos", ...PHASES.map((p) => p.id), "transversal", "decisiones", "lab"];
 }
@@ -709,6 +728,7 @@ function render(opts = {}) {
   content.style.setProperty("--c", phase ? phase.accent : page ? page.accent : "#38bdf8");
   syncSimulatorTheme();
   annotateTerms(content);
+  renderMath(content);
 
   updateDiagram();
   bindContent();

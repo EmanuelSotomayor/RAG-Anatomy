@@ -160,13 +160,13 @@ const PAGES = [
             <table>
               <thead><tr><th>Métrica</th><th>Fórmula</th><th>Nota</th></tr></thead>
               <tbody>
-                <tr><td><strong>Recall@k</strong></td><td><code>|relevantes ∩ top-k| / |relevantes|</code></td><td class="muted">¿Se escapó el bueno? Es la métrica reina del retrieval.</td></tr>
-                <tr><td><strong>Precision@k</strong></td><td><code>|relevantes ∩ top-k| / k</code></td><td class="muted">¿Cuánto ruido entra?</td></tr>
-                <tr><td><strong>MRR</strong></td><td><code>1/|Q| · Σ 1/rank_i</code></td><td class="muted">Castiga que el primer acierto esté abajo.</td></tr>
-                <tr><td><strong>nDCG</strong></td><td><code>DCG / IDCG</code>, con <code>DCG = Σ (2^rel_i − 1) / log2(i+1)</code></td><td class="muted">Calidad del orden completo, no solo del top-1.</td></tr>
-                <tr><td><strong>Faithfulness</strong></td><td><code>claims soportados / claims totales</code></td><td class="muted">Se descompone la respuesta en claims y se verifica cada uno.</td></tr>
-                <tr><td><strong>Context precision</strong></td><td><code>Σ (precision@k · rel_k) / relevantes</code></td><td class="muted">Premia que los chunks útiles estén arriba.</td></tr>
-                <tr><td><strong>Context recall</strong></td><td><code>claims de la referencia cubiertos / total</code></td><td class="muted">Requiere ground truth.</td></tr>
+                <tr><td><strong>Recall@k</strong></td><td><span class="math no-terms">\\(\\frac{\\lvert R \\cap \\text{top-}k\\rvert}{\\lvert R\\rvert}\\)</span></td><td class="muted">¿Se escapó el bueno? Es la métrica reina del retrieval.</td></tr>
+                <tr><td><strong>Precision@k</strong></td><td><span class="math no-terms">\\(\\frac{\\lvert R \\cap \\text{top-}k\\rvert}{k}\\)</span></td><td class="muted">¿Cuánto ruido entra?</td></tr>
+                <tr><td><strong>MRR</strong></td><td><span class="math no-terms">\\(\\frac{1}{\\lvert Q\\rvert}\\sum_{i=1}^{\\lvert Q\\rvert}\\frac{1}{\\text{rank}_i}\\)</span></td><td class="muted">Castiga que el primer acierto esté abajo.</td></tr>
+                <tr><td><strong>nDCG</strong></td><td><span class="math no-terms">\\(\\frac{DCG}{IDCG}\\)</span>, con <span class="math no-terms">\\(DCG = \\sum_{i=1}^{n}\\frac{2^{rel_i}-1}{\\log_2(i+1)}\\)</span></td><td class="muted">Calidad del orden completo, no solo del top-1.</td></tr>
+                <tr><td><strong>Faithfulness</strong></td><td><span class="math no-terms">\\(\\frac{\\text{claims soportados}}{\\text{claims totales}}\\)</span></td><td class="muted">Se descompone la respuesta en claims y se verifica cada uno.</td></tr>
+                <tr><td><strong>Context precision</strong></td><td><span class="math no-terms">\\(\\frac{\\sum_k (\\text{precision@}k \\cdot rel_k)}{\\lvert\\text{relevantes}\\rvert}\\)</span></td><td class="muted">Premia que los chunks útiles estén arriba.</td></tr>
+                <tr><td><strong>Context recall</strong></td><td><span class="math no-terms">\\(\\frac{\\text{claims de la referencia cubiertos}}{\\text{total}}\\)</span></td><td class="muted">Requiere ground truth.</td></tr>
               </tbody>
             </table>
           </div>

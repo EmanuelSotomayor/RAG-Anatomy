@@ -69,6 +69,7 @@ Cada fase muestra:
   - `index.html#lab/chunking`
   - `index.html#lab/fallas`
   - `index.html#general/glosario`
+- **Fórmulas**: las expresiones matemáticas se renderizan con **KaTeX vendorizado** (`vendor/katex/`), tanto en el deep dive de Chunking como en las fórmulas de evaluación.
 - **Tema**: toggle claro/oscuro (se guarda en `localStorage`). También `?theme=light`.
 
 ## Apuntes para Obsidian
@@ -77,7 +78,7 @@ El contenido también está exportado como vault de Obsidian en `obsidian/`:
 
 - `00 - RAG Anatomy.md`: nota índice con la ruta de lectura.
 - Una nota por visión general, fase, página conceptual, LAB y glosario.
-- Enlaces internos `[[...]]`, frontmatter, callouts y tablas Markdown.
+- Enlaces internos `[[...]]`, frontmatter, callouts, tablas Markdown y fórmulas en LaTeX nativo.
 - Diagramas Mermaid por fase.
 - `attachments/pipeline-isometrico.svg`: versión animada del diagrama isométrico.
 - `attachments/pipeline-isometrico.png`: fallback estático.
@@ -97,6 +98,7 @@ RAG-Anatomy/
 ├── data.js      # contenido de las 4 fases + overview
 ├── chunking-deep.js  # deep dive de Chunking: embeddings, distancias y encoders
 ├── simuladores/ # simuladores HTML interactivos (embeddings y pipeline)
+├── vendor/katex/  # KaTeX local para renderizar fórmulas LaTeX
 ├── pages.js     # contenido de Fundamentos, Transversal y Decisiones
 ├── lab.js       # página LAB + lógica interactiva (calculadora e inyector de fallas)
 ├── terms.js     # glosario de términos técnicos + tooltips inline
@@ -125,4 +127,4 @@ El diagrama del pipeline es un SVG isométrico generado en runtime (sin librerí
 
 - HTML, CSS y JavaScript vanilla.
 - SVG isométrico generado con `data.js` + `app.js`.
-- App principal sin dependencias ni build step. Los simuladores son HTML autónomos; el laboratorio de embeddings incluye Tailwind local.
+- App principal sin dependencias ni build step. Los simuladores son HTML autónomos; el laboratorio de embeddings incluye Tailwind local. KaTeX está vendorizado en `vendor/katex/` para renderizar LaTeX sin CDN.
