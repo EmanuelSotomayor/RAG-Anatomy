@@ -223,7 +223,7 @@ En motores de búsqueda vectorial como **Qdrant, Pinecone, Milvus o pgvector**, 
 Es el teorema de Pitágoras generalizado a N dimensiones. Mide la línea recta entre las puntas de dos vectores.
 
 $$
-d(A,B) = \sqrt{\sum_i (A_i - B_i)^2}
+\text{Distancia}(A, B) = \sqrt{\sum_{i=1}^{n} (A_i - B_i)^2} = \sqrt{(A_1 - B_1)^2 + (A_2 - B_2)^2 + \dots + (A_n - B_n)^2}
 $$
 
 - **A vs. B:** ≈ **0.094** → muy cercanos, próximo a 0.
@@ -236,7 +236,7 @@ $$
 En vez de medir la distancia entre puntas, mide el **ángulo θ** entre las dos flechas que salen del origen. Es el estándar en NLP porque captura significado sin importar la longitud del texto.
 
 $$
-\cos(\theta) = \frac{A \cdot B}{\lVert A \rVert \, \lVert B \rVert}
+\text{Similitud Coseno}(A, B) = \cos(\theta) = \frac{A \cdot B}{\|A\| \|B\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}
 $$
 
 - **A vs. B:** ≈ **0.9998** → casi idénticos.
@@ -250,7 +250,7 @@ $$
 Multiplica coordenada por coordenada y suma todo:
 
 $$
-A \cdot B = \sum_i A_i B_i
+A \cdot B = \sum_{i=1}^{n} (A_i \times B_i) = (A_1 \times B_1) + (A_2 \times B_2) + \dots + (A_n \times B_n)
 $$
 
 > [!note]

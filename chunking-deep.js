@@ -119,7 +119,7 @@ const CHUNKING_DEEP = {
             <span class="mini-tag">1.1.5 · La regla física</span>
             <h4>Distancia euclidiana (L2)</h4>
             <p>Es el teorema de Pitágoras generalizado a N dimensiones. Mide la línea recta entre las puntas de dos vectores.</p>
-            <div class="formula no-terms">$$d(A,B) = \\sqrt{\\sum_i (A_i - B_i)^2}$$</div>
+            <div class="formula no-terms">$$\\text{Distancia}(A, B) = \\sqrt{\\sum_{i=1}^{n} (A_i - B_i)^2} = \\sqrt{(A_1 - B_1)^2 + (A_2 - B_2)^2 + \\dots + (A_n - B_n)^2}$$</div>
             <ul class="deep-list">
               <li><strong>A vs. B:</strong> ≈ <strong>0.094</strong> → muy cercanos, próximo a 0.</li>
               <li><strong>A vs. C:</strong> ≈ <strong>3.133</strong> → muy lejanos.</li>
@@ -130,7 +130,7 @@ const CHUNKING_DEEP = {
             <span class="mini-tag">1.1.6 · El ángulo de la brújula</span>
             <h4>Similitud del coseno</h4>
             <p>En vez de medir la distancia entre puntas, mide el <strong>ángulo θ</strong> entre las dos flechas que salen del origen. Es el estándar en NLP porque captura significado sin importar la longitud del texto.</p>
-            <div class="formula no-terms">$$\\cos(\\theta) = \\frac{A \\cdot B}{\\lVert A \\rVert \\, \\lVert B \\rVert}$$</div>
+            <div class="formula no-terms">$$\\text{Similitud Coseno}(A, B) = \\cos(\\theta) = \\frac{A \\cdot B}{\\|A\\| \\|B\\|} = \\frac{\\sum_{i=1}^{n} A_i B_i}{\\sqrt{\\sum_{i=1}^{n} A_i^2} \\sqrt{\\sum_{i=1}^{n} B_i^2}}$$</div>
             <ul class="deep-list">
               <li><strong>A vs. B:</strong> ≈ <strong>0.9998</strong> → casi idénticos.</li>
               <li><strong>A vs. C:</strong> ≈ <strong>0.1890</strong> → ángulo muy abierto, baja relación.</li>
@@ -143,7 +143,7 @@ const CHUNKING_DEEP = {
           <span class="mini-tag">1.1.7 · El atajo de alta velocidad</span>
           <h4>Producto punto (dot product)</h4>
           <p>Multiplica coordenada por coordenada y suma todo:</p>
-          <div class="formula no-terms">$$A \\cdot B = \\sum_i A_i B_i$$</div>
+          <div class="formula no-terms">$$A \\cdot B = \\sum_{i=1}^{n} (A_i \\times B_i) = (A_1 \\times B_1) + (A_2 \\times B_2) + \\dots + (A_n \\times B_n)$$</div>
           <div class="callout"><strong>Truco en producción:</strong> cuando los embeddings están <strong>normalizados</strong> —su magnitud ‖A‖ es exactamente 1—, el denominador del coseno se vuelve <code>1 × 1 = 1</code>. Entonces el producto punto da exactamente el mismo resultado que la similitud del coseno, y ahorra millones de raíces cuadradas y divisiones en la GPU.</div>
         </div>
 
