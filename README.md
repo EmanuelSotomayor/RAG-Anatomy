@@ -41,18 +41,20 @@ Cada fase muestra:
 - Hiperparámetros con valores típicos y efecto.
 - Modos de falla.
 - Métricas de la fase.
+- **Salida en detalle**: cada artefacto del contrato explicado con qué es, qué función cumple, con qué fase conecta y una analogía de desarrollo.
 
 ## Navegación
 
 - **Sidebar**: orden de lectura en tres bloques: **Empezar** (Visión general, Fundamentos) → **Pipeline** (4 fases) → **Profundizar** (Transversal, Decisiones, LAB).
 - **Diagrama isométrico**: click en cualquier cubo para abrir esa fase.
 - **Pager anterior/siguiente**: sigue la misma secuencia de lectura que el menú.
-- **Subnav sticky** dentro de cada fase/página: contratos, pasos, algoritmos, estrategias, hiperparámetros, fallas, métricas o las secciones conceptuales.
+- **Subnav sticky** dentro de cada fase/página: contratos, salida en detalle, pasos, algoritmos, estrategias, hiperparámetros, fallas, métricas o las secciones conceptuales.
 - **Glosario inline**: los términos técnicos aparecen subrayados; al pasar el mouse (o tocar en móvil) muestran una explicación simple.
 - **Buscador**: indexa todo el contenido (pasos, algoritmos, estrategias, fallas, métricas, glosario y páginas conceptuales). Click en un resultado te lleva a la sección exacta.
 - **Atajos**: `1`–`4` fases, `0`/`H` visión general, `F` fundamentos, `T` transversal, `D` decisiones, `L` lab, `/` buscar, `Esc` cerrar búsqueda.
 - **Deep links**:
   - `index.html#retrieval`
+  - `index.html#chunking/contrato-detalle`
   - `index.html#retrieval/entrenamiento`
   - `index.html#fundamentos/definiciones`
   - `index.html#transversal/seguridad`

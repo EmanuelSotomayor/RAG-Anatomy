@@ -31,6 +31,60 @@ const PHASES = [
         "Configuración versionada (embedder, chunk_size, overlap)"
       ]
     },
+    contractDetail: {
+      intro:
+        "La salida no es un solo objeto: es un paquete de artefactos que trabajan juntos. Cada uno resuelve una parte distinta de la búsqueda y tiene un consumidor concreto en RETRIEVAL.",
+      items: [
+        {
+          name: "Índice vectorial",
+          tag: "ANN · HNSW · IVF · PQ",
+          what:
+            "Guarda un vector por chunk y permite responder rápido «¿qué chunks se parecen a este vector?». No compara contra todos: usa una estructura aproximada para encontrar vecinos cercanos.",
+          role:
+            "Es el motor de la búsqueda semántica. RETRIEVAL convierte la query en un vector y le pide los vecinos más cercanos.",
+          connect:
+            "Sin este índice, RETRIEVAL tendría que recorrer todos los chunks en cada pregunta. HNSW usa un grafo, IVF agrupa en clusters y PQ comprime los vectores para ahorrar memoria.",
+          dev:
+            "Como un mapa organizado por zonas: llegás a la zona correcta sin revisar calle por calle."
+        },
+        {
+          name: "Índice léxico",
+          tag: "BM25 · SPLADE",
+          what:
+            "Indexa palabras y términos exactos. Encuentra coincidencias literales que la búsqueda semántica puede pasar por alto.",
+          role:
+            "Se consulta en paralelo al índice vectorial (búsqueda híbrida). Es clave para nombres propios, códigos, siglas y números.",
+          connect:
+            "RETRIEVAL fusiona ambos rankings antes del reranking. BM25 es el clásico; SPLADE es léxico neural con expansión de términos.",
+          dev:
+            "Como el índice alfabético de un libro: si sabés la palabra exacta, es el camino más directo."
+        },
+        {
+          name: "Chunk store",
+          tag: "texto + metadata + parent_id",
+          what:
+            "Es la base donde vive el contenido real de cada chunk: el texto, sus datos y el vínculo con su documento padre.",
+          role:
+            "El índice devuelve IDs y scores; el chunk store resuelve el texto que se inserta en el prompt. La metadata permite filtrar por tenant, ACL o fecha; parent_id permite traer el contexto completo.",
+          connect:
+            "AUGMENTED consume el texto y la metadata para construir el prompt y el citations_map.",
+          dev:
+            "Como la ficha completa de un registro: el índice te da el ID y el store te da el contenido."
+        },
+        {
+          name: "Configuración versionada",
+          tag: "embedder · chunk_size · overlap",
+          what:
+            "Es el «cómo se construyó»: qué modelo convirtió texto en vectores, con qué tamaño de chunk y cuánto solapamiento entre fragmentos.",
+          role:
+            "Hace reproducible el índice. Si cambia el embedder, los vectores nuevos y viejos no son comparables: hay que reindexar todo.",
+          connect:
+            "RETRIEVAL debe usar el mismo embedder para la query; la auditoría necesita saber qué versión produjo cada respuesta.",
+          dev:
+            "Como el lockfile de dependencias: sin la versión exacta, el build no es reproducible."
+        }
+      ]
+    },
     steps: [
       {
         n: "01",
@@ -206,6 +260,60 @@ const PHASES = [
         "Score y posición en el ranking",
         "Metadata y procedencia",
         "Trazabilidad para auditar"
+      ]
+    },
+    contractDetail: {
+      intro:
+        "La salida es un ranking, no una lista de textos sueltos. Cada campo existe para que AUGMENTED decida qué entra al prompt y para que puedas auditar por qué.",
+      items: [
+        {
+          name: "Texto del chunk",
+          tag: "chunk · parent",
+          what:
+            "El contenido que se va a insertar en el prompt. Si se usa parent-document, se incluye también el texto del padre para dar más contexto.",
+          role:
+            "Es la materia prima de la respuesta: sin texto no hay nada que aumentar.",
+          connect:
+            "AUGMENTED lo formatea y lo recorta según el presupuesto de tokens.",
+          dev:
+            "Como el resultado de un SELECT: primero traés la fila y después decidís qué columnas mostrar."
+        },
+        {
+          name: "Score y posición",
+          tag: "score · rank",
+          what:
+            "El número con el que el retriever ordenó cada candidato y su posición final después del reranking.",
+          role:
+            "Permite decidir qué chunks entran, cuáles se descartan y en qué orden. Un score alto no garantiza que el chunk responda la pregunta.",
+          connect:
+            "AUGMENTED usa el orden para poner lo mejor al principio y al final del contexto, donde el modelo presta más atención.",
+          dev:
+            "Como el ORDER BY de una consulta: el orden cambia lo que el usuario ve primero."
+        },
+        {
+          name: "Metadata y procedencia",
+          tag: "doc_id · página · ACL",
+          what:
+            "Los datos que identifican de dónde salió el chunk: documento, sección, página, tenant y permisos.",
+          role:
+            "Permite filtrar antes de buscar, citar después y auditar siempre. Sin metadata no hay citas verificables ni aislamiento entre clientes.",
+          connect:
+            "AUGMENTED construye el citations_map y GENERATION lo usa para citar.",
+          dev:
+            "Como la foreign key y el audit log: sin ellos no podés reconstruir el origen."
+        },
+        {
+          name: "Trazabilidad",
+          tag: "trace · candidatos · filtros",
+          what:
+            "El registro de qué query se buscó, con qué filtros, qué candidatos aparecieron y con qué scores.",
+          role:
+            "Sirve para depurar: si la respuesta falla, podés ver si el problema fue la query, el filtro, el índice o el ranking.",
+          connect:
+            "AUGMENTED y GENERATION agregan sus propias trazas para cerrar el recorrido completo.",
+          dev:
+            "Como los logs estructurados de un request: sin trazas, debuggeás a ciegas."
+        }
       ]
     },
     steps: [
@@ -404,6 +512,60 @@ const PHASES = [
         "trace: chunks usados y descartados"
       ]
     },
+    contractDetail: {
+      intro:
+        "La salida es el input exacto del LLM. No es «un prompt» genérico: es un contrato con rol, evidencia, presupuesto y un mapa de citas.",
+      items: [
+        {
+          name: "messages",
+          tag: "system · user",
+          what:
+            "La estructura de mensajes que recibe el modelo. system define rol, reglas y formato; user lleva la pregunta y el contexto recuperado.",
+          role:
+            "Separa instrucciones de evidencia. Es la base del instruction hierarchy y de la defensa contra prompt injection.",
+          connect:
+            "GENERATION lo consume tal cual; no vuelve a armar el contexto.",
+          dev:
+            "Como separar configuración de argumentos en una función: no mezclás flags con datos."
+        },
+        {
+          name: "citations_map",
+          tag: "doc_id → fuente",
+          what:
+            "Un mapa que conecta cada fragmento insertado con su documento, página y quote original.",
+          role:
+            "Permite que la respuesta cite fuentes verificables y que puedas rastrear cada afirmación.",
+          connect:
+            "GENERATION lo usa para emitir citations y marcar grounded.",
+          dev:
+            "Como una tabla de referencias: cada dato apunta a su origen."
+        },
+        {
+          name: "Token count y presupuesto",
+          tag: "tokens · budget",
+          what:
+            "Cuántos tokens ocupa el prompt final y cuánto del presupuesto asignado se usó.",
+          role:
+            "Controla costo, latencia y truncamiento. Si te pasás, el modelo corta el final o falla.",
+          connect:
+            "GENERATION hereda ese presupuesto; si falta espacio, se recortan chunks antes de llamar al modelo.",
+          dev:
+            "Como el límite de payload de una API: si lo superás, el request se rechaza o se corta."
+        },
+        {
+          name: "Trace de contexto",
+          tag: "usados · descartados",
+          what:
+            "El registro de qué chunks entraron, cuáles quedaron afuera y por qué: score, presupuesto, deduplicación o filtro.",
+          role:
+            "Explica la decisión de contexto y permite mejorar retrieval y augmentation con evidencia.",
+          connect:
+            "GENERATION lo adjunta al trace final para auditoría.",
+          dev:
+            "Como el diff de un build: sabés qué entró y qué se descartó."
+        }
+      ]
+    },
     steps: [
       {
         n: "01",
@@ -553,6 +715,60 @@ const PHASES = [
         "citations con doc_id, página y quote",
         "grounded: true / false",
         "confidence y trace completo"
+      ]
+    },
+    contractDetail: {
+      intro:
+        "La salida no es solo texto: es una respuesta con evidencia, un veredicto de grounding y la traza para auditarla. Si falta cualquiera de esos campos, el contrato se rompe.",
+      items: [
+        {
+          name: "Answer",
+          tag: "texto final",
+          what:
+            "La respuesta en lenguaje natural que ve el usuario.",
+          role:
+            "Es el objetivo del pipeline, pero no alcanza por sí sola: necesita citas y verificación.",
+          connect:
+            "Se devuelve al usuario o a la aplicación que la consuma.",
+          dev:
+            "Como el return de una función: el valor que sale del sistema."
+        },
+        {
+          name: "Citations",
+          tag: "doc_id · página · quote",
+          what:
+            "Las fuentes exactas que respaldan cada afirmación, con el fragmento textual que la soporta.",
+          role:
+            "Hacen verificable la respuesta y permiten al usuario abrir la fuente.",
+          connect:
+            "Se construyen desde el citations_map de AUGMENTED y se validan contra los chunks usados.",
+          dev:
+            "Como los tests que respaldan un cambio: sin evidencia, no hay confianza."
+        },
+        {
+          name: "Grounded",
+          tag: "true / false",
+          what:
+            "Un veredicto sobre si la respuesta está soportada por el contexto recuperado.",
+          role:
+            "Si es false, el sistema debería abstenerse, reparar o marcar la respuesta como no confiable.",
+          connect:
+            "Alimenta la decisión de abstención y las métricas de faithfulness.",
+          dev:
+            "Como el resultado de una validación: pass/fail antes de devolver."
+        },
+        {
+          name: "Confidence y trace",
+          tag: "confidence · trace",
+          what:
+            "Un indicador de confianza y el recorrido completo: query, chunks, prompt, respuesta y verificación.",
+          role:
+            "Permite monitorear, auditar y reproducir por qué el sistema respondió eso.",
+          connect:
+            "Cierra el contrato y alimenta observabilidad, feedback y evaluación.",
+          dev:
+            "Como el request ID y los logs: sin eso no podés investigar un incidente."
+        }
       ]
     },
     steps: [

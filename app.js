@@ -381,6 +381,7 @@ function renderOverview() {
 function renderPhase(p) {
   const navChips = [
     ["sec-" + p.id + "-contratos", "Contratos"],
+    ["sec-" + p.id + "-contrato-detalle", "Salida en detalle"],
     ["sec-" + p.id + "-pasos", "Pasos"],
     ["sec-" + p.id + "-algoritmos", "Algoritmos"],
     ...(p.training ? [["sec-" + p.id + "-entrenamiento", "Entrenamiento"]] : []),
@@ -421,6 +422,29 @@ function renderPhase(p) {
         </div>
       </div>`
     )}
+
+    ${p.contractDetail ? section(
+      "sec-" + p.id + "-contrato-detalle",
+      "Salida en detalle",
+      p.contractDetail.intro,
+      `<div class="artifact-grid">
+        ${p.contractDetail.items
+          .map(
+            (a) => `
+          <article class="artifact">
+            <div class="artifact-head">
+              <span class="artifact-tag">${a.tag}</span>
+              <h3>${a.name}</h3>
+            </div>
+            <p class="artifact-what">${a.what}</p>
+            <div class="artifact-row"><span>Función</span><p>${a.role}</p></div>
+            <div class="artifact-row"><span>Conecta con</span><p>${a.connect}</p></div>
+            <div class="artifact-dev"><span>Analogía dev</span>${a.dev}</div>
+          </article>`
+          )
+          .join("")}
+      </div>`
+    ) : ""}
 
     ${section(
       "sec-" + p.id + "-pasos",
@@ -718,6 +742,11 @@ function buildSearchIndex() {
     const base = p.id;
     p.input.items.forEach((x) => add(base, p.name, p.accent, "contratos", `sec-${base}-contratos`, "Entrada · " + p.input.title, x));
     p.output.items.forEach((x) => add(base, p.name, p.accent, "contratos", `sec-${base}-contratos`, "Salida · " + p.output.title, x));
+    if (p.contractDetail) {
+      p.contractDetail.items.forEach((a) =>
+        add(base, p.name, p.accent, "contrato", `sec-${base}-contrato-detalle`, a.name, [a.what, a.role, a.connect, a.dev].join(" · "))
+      );
+    }
     p.steps.forEach((s) => {
       add(base, p.name, p.accent, "pasos", `sec-${base}-pasos`, s.title, s.detail);
       s.algorithms.forEach((a) => add(base, p.name, p.accent, "pasos", `sec-${base}-pasos`, s.title + " · " + a, a));
