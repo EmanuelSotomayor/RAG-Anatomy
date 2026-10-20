@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="340" viewBox="0 0 1100 340" role="img" aria-label="Pipeline RAG de cuatro fases">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(150,170,195,.7)" />
+    </marker>
+    <style>
+      .iso-shadow { fill: rgba(0,0,0,.38); }
+      .iso-num { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 30px; font-weight: 800; fill: rgba(8,12,18,.52); }
+      .iso-name { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 1.6px; fill: #e6edf6; }
+      .iso-kicker { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.5px; letter-spacing: 1.2px; fill: #8fa1b8; }
+      .connector { fill: none; stroke: rgba(150,170,195,.32); stroke-width: 1.4; }
+      .packet { filter: drop-shadow(0 0 5px currentColor); }
+      .face { stroke: rgba(0,0,0,.28); stroke-width: .8; }
+      .iso-box { transition: transform .28s ease; }
+    </style>
+  </defs>
+  <rect width="1100" height="340" rx="18" fill="#0b111a" />
+  
+        <path class="connector" d="M 226.1 200.5 C 258.1 188.5, 261.9 173.5, 293.9 161.5" marker-end="url(#arrow)" />
+        <circle class="packet" r="3.4" fill="#f59e0b">
+          <animateMotion dur="2.6s" begin="0s" repeatCount="indefinite" path="M 226.1 200.5 C 258.1 188.5, 261.9 173.5, 293.9 161.5" />
+        </circle>
+        <path class="connector" d="M 486.1 200.5 C 518.1 188.5, 521.9 173.5, 553.9 161.5" marker-end="url(#arrow)" />
+        <circle class="packet" r="3.4" fill="#38bdf8">
+          <animateMotion dur="2.6s" begin="0.55s" repeatCount="indefinite" path="M 486.1 200.5 C 518.1 188.5, 521.9 173.5, 553.9 161.5" />
+        </circle>
+        <path class="connector" d="M 746.1 200.5 C 778.1 188.5, 781.9 173.5, 813.9 161.5" marker-end="url(#arrow)" />
+        <circle class="packet" r="3.4" fill="#a78bfa">
+          <animateMotion dur="2.6s" begin="1.1s" repeatCount="indefinite" path="M 746.1 200.5 C 778.1 188.5, 781.9 173.5, 813.9 161.5" />
+        </circle>
+  
+      <g class="iso-phase">
+        <ellipse class="iso-shadow" cx="130" cy="234" rx="78.8" ry="15" />
+        <g class="iso-box">
+          <polygon class="face" points="33.9,118.5 163.8,193.5 163.8,279.5 33.9,204.5" fill="#d97706" />
+          <polygon class="face" points="226.1,157.5 163.8,193.5 163.8,279.5 226.1,243.5" fill="#b45309" />
+          <polygon class="face top" points="96.2,82.5 226.1,157.5 163.8,193.5 33.9,118.5" fill="#fbbf24" />
+          <text class="iso-num" x="130" y="148" text-anchor="middle">1</text>
+        </g>
+        <text class="iso-name" x="130" y="286" text-anchor="middle">CHUNKING</text>
+        <text class="iso-kicker" x="130" y="308" text-anchor="middle">01 · chunking</text>
+      </g>
+      <g class="iso-phase">
+        <ellipse class="iso-shadow" cx="390" cy="234" rx="78.8" ry="15" />
+        <g class="iso-box">
+          <polygon class="face" points="293.9,118.5 423.8,193.5 423.8,279.5 293.9,204.5" fill="#0ea5e9" />
+          <polygon class="face" points="486.1,157.5 423.8,193.5 423.8,279.5 486.1,243.5" fill="#0369a1" />
+          <polygon class="face top" points="356.2,82.5 486.1,157.5 423.8,193.5 293.9,118.5" fill="#7dd3fc" />
+          <text class="iso-num" x="390" y="148" text-anchor="middle">2</text>
+        </g>
+        <text class="iso-name" x="390" y="286" text-anchor="middle">RETRIEVAL</text>
+        <text class="iso-kicker" x="390" y="308" text-anchor="middle">02 · retrieval</text>
+      </g>
+      <g class="iso-phase">
+        <ellipse class="iso-shadow" cx="650" cy="234" rx="78.8" ry="15" />
+        <g class="iso-box">
+          <polygon class="face" points="553.9,118.5 683.8,193.5 683.8,279.5 553.9,204.5" fill="#8b5cf6" />
+          <polygon class="face" points="746.1,157.5 683.8,193.5 683.8,279.5 746.1,243.5" fill="#6d28d9" />
+          <polygon class="face top" points="616.2,82.5 746.1,157.5 683.8,193.5 553.9,118.5" fill="#c4b5fd" />
+          <text class="iso-num" x="650" y="148" text-anchor="middle">3</text>
+        </g>
+        <text class="iso-name" x="650" y="286" text-anchor="middle">AUGMENTED</text>
+        <text class="iso-kicker" x="650" y="308" text-anchor="middle">03 · augmented</text>
+      </g>
+      <g class="iso-phase">
+        <ellipse class="iso-shadow" cx="910" cy="234" rx="78.8" ry="15" />
+        <g class="iso-box">
+          <polygon class="face" points="813.9,118.5 943.8,193.5 943.8,279.5 813.9,204.5" fill="#10b981" />
+          <polygon class="face" points="1006.1,157.5 943.8,193.5 943.8,279.5 1006.1,243.5" fill="#047857" />
+          <polygon class="face top" points="876.2,82.5 1006.1,157.5 943.8,193.5 813.9,118.5" fill="#6ee7b7" />
+          <text class="iso-num" x="910" y="148" text-anchor="middle">4</text>
+        </g>
+        <text class="iso-name" x="910" y="286" text-anchor="middle">GENERATION</text>
+        <text class="iso-kicker" x="910" y="308" text-anchor="middle">04 · generation</text>
+      </g>
+</svg>

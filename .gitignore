@@ -1,3 +1,7 @@
 .netlify/
 node_modules/
 gl Weird Vermin.*~
+
+.obsidian/
+PROGRESS.md
+tools/build-obsidian.mjs

@@ -11,6 +11,12 @@ const state = {
       : localStorage.getItem("rag-anatomy-theme") || "dark"
 };
 
+// Contenido ampliado de Chunking (cargado desde chunking-deep.js).
+const CHUNKING_PHASE = PHASES.find((p) => p.id === "chunking");
+if (CHUNKING_PHASE && typeof CHUNKING_DEEP !== "undefined") {
+  CHUNKING_PHASE.deepDive = CHUNKING_DEEP;
+}
+
 /* ---------- utilidades ---------- */
 
 function points(list) {
@@ -382,6 +388,18 @@ function renderPhase(p) {
   const navChips = [
     ["sec-" + p.id + "-contratos", "Contratos"],
     ["sec-" + p.id + "-contrato-detalle", "Salida en detalle"],
+    ...(p.deepDive
+      ? p.deepDive.sections.map((s) => [
+          "sec-" + p.id + "-deep-" + s.id,
+          ({
+            embeddings: "Embeddings",
+            distancias: "Distancias",
+            flujo: "Ingesta vs. consulta",
+            modelos: "Embeddings vs. LLM",
+            encoders: "Encoders"
+          })[s.id] || s.title
+        ])
+      : []),
     ["sec-" + p.id + "-pasos", "Pasos"],
     ["sec-" + p.id + "-algoritmos", "Algoritmos"],
     ...(p.training ? [["sec-" + p.id + "-entrenamiento", "Entrenamiento"]] : []),
@@ -444,6 +462,24 @@ function renderPhase(p) {
           )
           .join("")}
       </div>`
+    ) : ""}
+
+    ${p.deepDive ? section(
+      "sec-" + p.id + "-deep",
+      p.deepDive.title,
+      p.deepDive.sub,
+      p.deepDive.sections
+        .map(
+          (s) => `
+        <article class="deep-block" id="sec-${p.id}-deep-${s.id}">
+          <div class="deep-block-head">
+            <h3>${s.title}</h3>
+            <p>${s.sub}</p>
+          </div>
+          ${s.html}
+        </article>`
+        )
+        .join("")
     ) : ""}
 
     ${section(
@@ -671,6 +707,7 @@ function render(opts = {}) {
   }
 
   content.style.setProperty("--c", phase ? phase.accent : page ? page.accent : "#38bdf8");
+  syncSimulatorTheme();
   annotateTerms(content);
 
   updateDiagram();
@@ -680,7 +717,18 @@ function render(opts = {}) {
   if (scrollTop) window.scrollTo({ top: 0, behavior: "instant" });
 }
 
+function updateSubnavOffset() {
+  const subnav = $(".subnav");
+  if (subnav) document.documentElement.style.setProperty("--subnav-h", subnav.offsetHeight + "px");
+}
+
 function bindContent() {
+  updateSubnavOffset();
+
+  $$("iframe.sim-frame").forEach((frame) => {
+    frame.addEventListener("load", syncSimulatorTheme);
+  });
+
   $$("[data-go]").forEach((el) => {
     el.addEventListener("click", () => navigate(el.dataset.go));
   });
@@ -745,6 +793,11 @@ function buildSearchIndex() {
     if (p.contractDetail) {
       p.contractDetail.items.forEach((a) =>
         add(base, p.name, p.accent, "contrato", `sec-${base}-contrato-detalle`, a.name, [a.what, a.role, a.connect, a.dev].join(" · "))
+      );
+    }
+    if (p.deepDive) {
+      p.deepDive.sections.forEach((s) =>
+        add(base, p.name, p.accent, "deep", `sec-${base}-deep-${s.id}`, s.title, strip(s.html))
       );
     }
     p.steps.forEach((s) => {
@@ -825,10 +878,21 @@ function closeSearch() {
 
 /* ---------- tema ---------- */
 
+function syncSimulatorTheme() {
+  $$("iframe.sim-frame").forEach((frame) => {
+    try {
+      frame.contentWindow?.postMessage({ type: "set-theme", theme: state.theme }, "*");
+    } catch {
+      // El simulador puede no estar cargado todavía.
+    }
+  });
+}
+
 function applyTheme() {
   document.documentElement.setAttribute("data-theme", state.theme);
   $("#theme").textContent = state.theme === "dark" ? "◐" : "◑";
   $("#theme").setAttribute("title", state.theme === "dark" ? "Cambiar a claro" : "Cambiar a oscuro");
+  syncSimulatorTheme();
 }
 
 function toggleTheme() {
@@ -850,6 +914,13 @@ function init() {
   search.addEventListener("input", () => renderResults(doSearch(search.value), search.value));
   search.addEventListener("focus", () => {
     if (search.value.trim().length >= 2) renderResults(doSearch(search.value), search.value);
+  });
+
+  window.addEventListener("message", (e) => {
+    if (!e.data || e.data.type !== "widget-resize" || !Number.isFinite(e.data.height)) return;
+    const frame = $$("iframe.sim-frame").find((f) => f.contentWindow === e.source);
+    if (!frame) return;
+    frame.style.height = Math.max(560, Math.min(1200, e.data.height)) + "px";
   });
 
   document.addEventListener("click", (e) => {
@@ -877,6 +948,7 @@ function init() {
   });
 
   $("#theme").addEventListener("click", toggleTheme);
+  window.addEventListener("resize", updateSubnavOffset);
   render();
 
   // deep link por hash: #retrieval o #retrieval/estrategias

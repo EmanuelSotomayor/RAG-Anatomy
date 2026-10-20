@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laboratorio Interactivo de Embeddings</title>
+  <script src="tailwind.js"></script>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    input[type="range"] {
+      accent-color: #38bdf8;
+    }
+    .tab-active {
+      background-color: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+    }
+    canvas {
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-6 select-none">
+
+  <!-- Encabezado y Navegación por Pestañas -->
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+      <div>
+        <h1 class="text-lg md:text-xl font-bold text-sky-400">Laboratorio Interactivo: Embeddings y Dimensiones</h1>
+        <p class="text-xs text-slate-400">Suite autocontenida para Obsidian · Arrastra los lienzos 3D para rotar la cámara</p>
+      </div>
+      <div class="flex flex-wrap gap-1.5" id="tabs">
+        <button onclick="switchTab(1)" id="tab-btn-1" class="tab-active px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 transition">1. Vector vs Matriz (3D)</button>
+        <button onclick="switchTab(2)" id="tab-btn-2" class="bg-slate-800 text-slate-300 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 transition">2. Distancias (Euclidiana vs Coseno)</button>
+        <button onclick="switchTab(3)" id="tab-btn-3" class="bg-slate-800 text-slate-300 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 transition">3. N Dimensiones (Coordenadas)</button>
+        <button onclick="switchTab(4)" id="tab-btn-4" class="bg-slate-800 text-slate-300 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 transition">4. Proyector 200D → 3D</button>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 1: VECTOR VS MATRIZ 3D -->
+    <div id="tab-1" class="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col items-center">
+        <div class="w-full flex justify-between items-center mb-2">
+          <span class="text-xs font-medium text-slate-400">Espacio Cartesiano 3D (Arrastra con el mouse para rotar)</span>
+          <div class="flex gap-1 bg-slate-800 p-1 rounded-lg">
+            <button id="mode-vec" onclick="setModeTab1('vector')" class="px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold">1 Vector (1 Punto)</button>
+            <button id="mode-mat" onclick="setModeTab1('matrix')" class="px-2.5 py-1 text-xs rounded-md text-slate-300">Matriz (4 Puntos)</button>
+          </div>
+        </div>
+        <canvas id="canvas-tab1" width="520" height="380" class="w-full h-[360px] bg-slate-950 rounded-lg cursor-grab"></canvas>
+      </div>
+
+      <div class="lg:col-span-5 flex flex-col gap-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <h3 class="text-sm font-semibold text-sky-400 mb-3">Coordenadas del Vector "Perro"</h3>
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between mb-1"><span class="text-rose-400 font-medium">Eje X (Dimensión 1: Ser vivo)</span><span id="val-x" class="font-mono">0.90</span></div>
+              <input id="slider-x" type="range" min="-1" max="1" step="0.05" value="0.90" oninput="updateTab1()" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between mb-1"><span class="text-emerald-400 font-medium">Eje Y (Dimensión 2: Doméstico)</span><span id="val-y" class="font-mono">0.80</span></div>
+              <input id="slider-y" type="range" min="-1" max="1" step="0.05" value="0.80" oninput="updateTab1()" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between mb-1"><span class="text-sky-400 font-medium">Eje Z (Dimensión 3: Tamaño)</span><span id="val-z" class="font-mono">0.50</span></div>
+              <input id="slider-z" type="range" min="-1" max="1" step="0.05" value="0.50" oninput="updateTab1()" class="w-full">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-semibold text-amber-400">Estructura en Código</h3>
+            <span id="shape-badge" class="px-2 py-0.5 text-[11px] font-mono bg-sky-950 text-sky-300 border border-sky-700 rounded">Shape: (3,) - 1D</span>
+          </div>
+          <pre id="code-box-tab1" class="text-xs font-mono bg-slate-950 p-3 rounded-lg border border-slate-800 text-slate-200 overflow-x-auto"></pre>
+          <p id="desc-tab1" class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Los 3 números son las 3 coordenadas necesarias para ubicar <strong>un único punto</strong> en el espacio.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 2: DISTANCIA EUCLIDIANA VS COSENO -->
+    <div id="tab-2" class="hidden mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+          <span class="text-xs text-slate-400">Comparación geométrica en 3D</span>
+          <div class="flex gap-1 bg-slate-800 p-1 rounded-lg">
+            <button id="pair-ab" onclick="setPairTab2('AB')" class="px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold">VectorA vs VectorB (Cercanos)</button>
+            <button id="pair-ac" onclick="setPairTab2('AC')" class="px-2.5 py-1 text-xs rounded-md text-slate-300">VectorA vs VectorC (Lejanos)</button>
+          </div>
+        </div>
+        <canvas id="canvas-tab2" width="520" height="380" class="w-full h-[360px] bg-slate-950 rounded-lg cursor-grab"></canvas>
+      </div>
+
+      <div class="lg:col-span-5 flex flex-col gap-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+            <span class="text-[11px] text-amber-400 font-semibold uppercase">Distancia Euclidiana (L2)</span>
+            <div id="metric-euc" class="text-2xl font-bold font-mono text-white mt-1">0.094</div>
+            <span class="text-[11px] text-slate-400">Línea recta entre puntas (0 = idénticos)</span>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+            <span class="text-[11px] text-emerald-400 font-semibold uppercase">Similitud del Coseno</span>
+            <div id="metric-cos" class="text-2xl font-bold font-mono text-white mt-1">0.9998</div>
+            <span id="metric-ang" class="text-[11px] text-slate-400">Ángulo: 1.1° (1 = misma dirección)</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2.5 text-xs">
+          <div class="flex justify-between items-center">
+            <span class="font-semibold text-sky-400">Vector A (Fijo): <code class="text-slate-200">[0.13, 0.25, 0.99]</code></span>
+          </div>
+          <hr class="border-slate-800">
+          <div id="label-comp-vec" class="font-semibold text-emerald-400">Ajustar Vector Comparado:</div>
+          <div>
+            <div class="flex justify-between"><span class="text-slate-400">Coordenada X₁</span><span id="t2-val-x" class="font-mono">0.11</span></div>
+            <input id="t2-x" type="range" min="-3" max="1.5" step="0.01" value="0.11" oninput="updateTab2()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between"><span class="text-slate-400">Coordenada X₂</span><span id="t2-val-y" class="font-mono">0.23</span></div>
+            <input id="t2-y" type="range" min="-1.5" max="1.5" step="0.01" value="0.23" oninput="updateTab2()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between"><span class="text-slate-400">Coordenada X₃</span><span id="t2-val-z" class="font-mono">0.90</span></div>
+            <input id="t2-z" type="range" min="-1.5" max="1.5" step="0.01" value="0.90" oninput="updateTab2()" class="w-full">
+          </div>
+          <pre id="formula-breakdown" class="text-[11px] font-mono bg-slate-950 p-2.5 rounded border border-slate-800 text-slate-300 overflow-x-auto"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: N DIMENSIONES (COORDENADAS PARALELAS) -->
+    <div id="tab-3" class="hidden mt-4 space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-3">
+          <div>
+            <h3 class="text-sm font-semibold text-sky-400">Visualizador de Coordenadas Paralelas ($x_1, x_2, \dots, x_N$)</h3>
+            <p class="text-xs text-slate-400">Cuando superamos 3 dimensiones, ponemos los ejes verticales en paralelo. Cada línea completa sigue siendo 1 solo punto.</p>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
+            <span class="text-xs font-medium text-slate-300">Dimensiones activas ($N$): <strong id="nd-count" class="text-sky-400 font-mono">8D</strong></span>
+            <input id="nd-slider" type="range" min="2" max="10" step="1" value="8" oninput="updateTab3()" class="w-28">
+          </div>
+        </div>
+        <canvas id="canvas-tab3" width="920" height="300" class="w-full h-[280px] bg-slate-950 rounded-lg"></canvas>
+        <div class="flex flex-wrap justify-between items-center gap-4 mt-3 text-xs">
+          <div class="flex gap-4">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-400 inline-block"></span> <strong>Perro</strong> (Vector A)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> <strong>Gato</strong> (Vector B - Cercano)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-400 inline-block"></span> <strong>Automóvil</strong> (Vector C - Lejano)</span>
+          </div>
+          <div id="nd-metrics" class="font-mono text-slate-300 bg-slate-950 px-3 py-1.5 rounded border border-slate-800"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 4: PROYECTOR 200D A 3D -->
+    <div id="tab-4" class="hidden mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+          <span class="text-xs text-slate-400">Simulador TensorFlow Projector (200D comprimidos a 3D)</span>
+          <div class="flex gap-1 bg-slate-800 p-1 rounded-lg">
+            <button id="alg-pca" onclick="setAlgTab4('PCA')" class="px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold">PCA (Lineal)</button>
+            <button id="alg-tsne" onclick="setAlgTab4('TSNE')" class="px-2.5 py-1 text-xs rounded-md text-slate-300">t-SNE (Vecinos)</button>
+            <button id="alg-umap" onclick="setAlgTab4('UMAP')" class="px-2.5 py-1 text-xs rounded-md text-slate-300">UMAP (Global)</button>
+          </div>
+        </div>
+        <canvas id="canvas-tab4" width="520" height="380" class="w-full h-[360px] bg-slate-950 rounded-lg cursor-grab"></canvas>
+      </div>
+
+      <div class="lg:col-span-5 flex flex-col gap-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 text-xs">
+          <div class="flex justify-between items-center">
+            <span class="font-semibold text-sky-400 uppercase">Cómo funciona la proyección</span>
+            <span id="alg-badge" class="px-2 py-0.5 bg-amber-950 text-amber-300 border border-amber-700 rounded font-mono">Varianza: ~21%</span>
+          </div>
+          <p id="alg-desc" class="text-slate-300 leading-relaxed">
+            <strong>PCA</strong> toma los 200 ejes originales y busca los 3 ángulos con mayor dispersión. Es como sacar una foto plana: rápida, pero mezcla algunos grupos.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div class="text-slate-400 font-semibold">Palabra inspeccionada: <span class="text-white font-mono">"computer"</span></div>
+            <div>
+              <span class="text-[11px] text-slate-400">Vector Real en Memoria (200 Dimensiones):</span>
+              <div class="font-mono text-[11px] text-sky-300 bg-slate-900 p-1.5 rounded mt-0.5 truncate">
+                [0.14, -0.82, 0.41, 0.09, -0.33, 0.77, 0.12, -0.51, ... +192 coords]
+              </div>
+            </div>
+            <div>
+              <span class="text-[11px] text-slate-400">Sombra Proyectada en Pantalla (3 Coordenadas Sintéticas):</span>
+              <div id="proj-coords" class="font-mono text-xs text-emerald-400 bg-slate-900 p-1.5 rounded mt-0.5">
+                X (PC1): -0.62 | Y (PC2): 0.48 | Z (PC3): 0.31
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-3 pt-1">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> Tecnología</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> Animales</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Países</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- UTILIDADES DE PROYECCIÓN 3D EN CANVAS 2D ---
+    function createOrbitState(rotX = -0.35, rotY = 0.65) {
+      return { rotX, rotY, dragging: false, lastX: 0, lastY: 0 };
+    }
+
+    function attachOrbit(canvas, state, onRender) {
+      canvas.addEventListener('pointerdown', (e) => {
+        state.dragging = true;
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
+        canvas.setPointerCapture(e.pointerId);
+      });
+      canvas.addEventListener('pointermove', (e) => {
+        if (!state.dragging) return;
+        const dx = e.clientX - state.lastX;
+        const dy = e.clientY - state.lastY;
+        state.rotY += dx * 0.008;
+        state.rotX = Math.max(-1.4, Math.min(1.4, state.rotX + dy * 0.008));
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
+        onRender();
+      });
+      canvas.addEventListener('pointerup', () => { state.dragging = false; });
+    }
+
+    function project3D(x, y, z, w, h, scale, orbit) {
+      // Rotación Y
+      const cosY = Math.cos(orbit.rotY), sinY = Math.sin(orbit.rotY);
+      const x1 = x * cosY - z * sinY;
+      const z1 = z * cosY + x * sinY;
+      // Rotación X
+      const cosX = Math.cos(orbit.rotX), sinX = Math.sin(orbit.rotX);
+      const y2 = y * cosX - z1 * sinX;
+      const z2 = z1 * cosX + y * sinX;
+      const fov = 4.5 / (4.5 + z2 * 0.35);
+      return {
+        px: w / 2 + x1 * scale * fov,
+        py: h / 2 - y2 * scale * fov,
+        depth: z2
+      };
+    }
+
+    function drawAxes(ctx, w, h, scale, orbit, maxVal = 1.2) {
+      const origin = project3D(0, 0, 0, w, h, scale, orbit);
+      const axes = [
+        { x: maxVal, y: 0, z: 0, color: '#fb7185', label: 'X' },
+        { x: 0, y: maxVal, z: 0, color: '#34d399', label: 'Y' },
+        { x: 0, y: 0, z: maxVal, color: '#38bdf8', label: 'Z' }
+      ];
+      axes.forEach(a => {
+        const neg = project3D(-a.x, -a.y, -a.z, w, h, scale, orbit);
+        const pos = project3D(a.x, a.y, a.z, w, h, scale, orbit);
+        ctx.save();
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(neg.px, neg.py); ctx.lineTo(origin.px, origin.py); ctx.stroke();
+        ctx.restore();
+
+        ctx.strokeStyle = a.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(origin.px, origin.py); ctx.lineTo(pos.px, pos.py); ctx.stroke();
+        ctx.fillStyle = a.color;
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(a.label, pos.px + 6, pos.py + 4);
+      });
+    }
+
+    // --- PESTAÑA 1: VECTOR VS MATRIZ ---
+    let tab1Mode = 'vector';
+    const orbit1 = createOrbitState(-0.4, 0.6);
+    const canvas1 = document.getElementById('canvas-tab1');
+    attachOrbit(canvas1, orbit1, renderTab1);
+
+    function setModeTab1(mode) {
+      tab1Mode = mode;
+      document.getElementById('mode-vec').className = mode === 'vector'
+        ? 'px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold'
+        : 'px-2.5 py-1 text-xs rounded-md text-slate-300';
+      document.getElementById('mode-mat').className = mode === 'matrix'
+        ? 'px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold'
+        : 'px-2.5 py-1 text-xs rounded-md text-slate-300';
+      updateTab1();
+    }
+
+    function updateTab1() {
+      const x = parseFloat(document.getElementById('slider-x').value);
+      const y = parseFloat(document.getElementById('slider-y').value);
+      const z = parseFloat(document.getElementById('slider-z').value);
+      document.getElementById('val-x').textContent = x.toFixed(2);
+      document.getElementById('val-y').textContent = y.toFixed(2);
+      document.getElementById('val-z').textContent = z.toFixed(2);
+
+      const codeBox = document.getElementById('code-box-tab1');
+      const badge = document.getElementById('shape-badge');
+      const desc = document.getElementById('desc-tab1');
+
+      if (tab1Mode === 'vector') {
+        badge.textContent = 'Shape: (3,) - Arreglo 1D';
+        codeBox.textContent = `// 1 Embedding (Un único punto 3D)\nperro = [${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}]`;
+        desc.innerHTML = 'Los 3 elementos del vector son las <strong>3 coordenadas</strong> que se cruzan para ubicar <strong>un único punto</strong>.';
+      } else {
+        badge.textContent = 'Shape: (4, 3) - Matriz 2D';
+        codeBox.textContent = `// Matriz = Lote de 4 Vectores (4 Puntos)\nmatriz = [\n  [${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}], // Perro\n  [0.90, 0.15, 0.75], // Lobo\n  [0.85, 0.85, 0.20], // Gato\n  [-0.80, -0.60, 0.80] // Auto\n]`;
+        desc.innerHTML = 'Al agrupar 4 vectores individuales en una lista, obtenemos una <strong>Matriz de 4 filas × 3 columnas</strong> (4 puntos en el espacio).';
+      }
+      renderTab1();
+    }
+
+    function renderTab1() {
+      const ctx = canvas1.getContext('2d');
+      const w = canvas1.width, h = canvas1.height, scale = 125;
+      ctx.clearRect(0, 0, w, h);
+      drawAxes(ctx, w, h, scale, orbit1, 1.15);
+
+      const x = parseFloat(document.getElementById('slider-x').value);
+      const y = parseFloat(document.getElementById('slider-y').value);
+      const z = parseFloat(document.getElementById('slider-z').value);
+
+      const origin = project3D(0, 0, 0, w, h, scale, orbit1);
+      const pXY = project3D(x, y, 0, w, h, scale, orbit1);
+      const pX = project3D(x, 0, 0, w, h, scale, orbit1);
+      const pMain = project3D(x, y, z, w, h, scale, orbit1);
+
+      // Líneas guía de coordenadas
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(pX.px, pX.py); ctx.lineTo(pXY.px, pXY.py);
+      ctx.lineTo(pMain.px, pMain.py);
+      ctx.stroke();
+      ctx.restore();
+
+      const points = [{ x, y, z, label: 'Perro', color: '#38bdf8' }];
+      if (tab1Mode === 'matrix') {
+        points.push(
+          { x: 0.90, y: 0.15, z: 0.75, label: 'Lobo', color: '#a78bfa' },
+          { x: 0.85, y: 0.85, z: 0.20, label: 'Gato', color: '#34d399' },
+          { x: -0.80, y: -0.60, z: 0.80, label: 'Auto', color: '#fb7185' }
+        );
+      }
+
+      points.forEach(pt => {
+        const proj = project3D(pt.x, pt.y, pt.z, w, h, scale, orbit1);
+        ctx.strokeStyle = pt.color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(origin.px, origin.py); ctx.lineTo(proj.px, proj.py); ctx.stroke();
+
+        ctx.fillStyle = pt.color;
+        ctx.beginPath(); ctx.arc(proj.px, proj.py, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(`${pt.label} [${pt.x.toFixed(1)}, ${pt.y.toFixed(1)}, ${pt.z.toFixed(1)}]`, proj.px + 9, proj.py - 6);
+      });
+    }
+
+    // --- PESTAÑA 2: DISTANCIAS ---
+    const orbit2 = createOrbitState(-0.3, 0.55);
+    const canvas2 = document.getElementById('canvas-tab2');
+    attachOrbit(canvas2, orbit2, renderTab2);
+
+    function setPairTab2(pair) {
+      document.getElementById('pair-ab').className = pair === 'AB'
+        ? 'px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold'
+        : 'px-2.5 py-1 text-xs rounded-md text-slate-300';
+      document.getElementById('pair-ac').className = pair === 'AC'
+        ? 'px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold'
+        : 'px-2.5 py-1 text-xs rounded-md text-slate-300';
+
+      if (pair === 'AB') {
+        document.getElementById('t2-x').value = 0.11;
+        document.getElementById('t2-y').value = 0.23;
+        document.getElementById('t2-z').value = 0.90;
+        document.getElementById('label-comp-vec').textContent = 'Ajustar Vector B (Cercano):';
+      } else {
+        document.getElementById('t2-x').value = -3.00;
+        document.getElementById('t2-y').value = 0.10;
+        document.getElementById('t2-z').value = 1.00;
+        document.getElementById('label-comp-vec').textContent = 'Ajustar Vector C (Lejano):';
+      }
+      updateTab2();
+    }
+
+    function updateTab2() {
+      const ax = 0.13, ay = 0.25, az = 0.99;
+      const bx = parseFloat(document.getElementById('t2-x').value);
+      const by = parseFloat(document.getElementById('t2-y').value);
+      const bz = parseFloat(document.getElementById('t2-z').value);
+
+      document.getElementById('t2-val-x').textContent = bx.toFixed(2);
+      document.getElementById('t2-val-y').textContent = by.toFixed(2);
+      document.getElementById('t2-val-z').textContent = bz.toFixed(2);
+
+      const euc = Math.hypot(ax - bx, ay - by, az - bz);
+      const dot = ax * bx + ay * by + az * bz;
+      const magA = Math.hypot(ax, ay, az);
+      const magB = Math.hypot(bx, by, bz) || 1e-6;
+      const cos = Math.max(-1, Math.min(1, dot / (magA * magB)));
+      const deg = (Math.acos(cos) * 180) / Math.PI;
+
+      document.getElementById('metric-euc').textContent = euc.toFixed(3);
+      document.getElementById('metric-cos').textContent = cos.toFixed(4);
+      document.getElementById('metric-ang').textContent = `Ángulo entre flechas: ${deg.toFixed(1)}°`;
+      document.getElementById('formula-breakdown').textContent =
+        `Producto Punto (A·B) = ${dot.toFixed(3)}\n` +
+        `Euclidiana = √((${ax}-${bx.toFixed(2)})² + (${ay}-${by.toFixed(2)})² + (${az}-${bz.toFixed(2)})²) = ${euc.toFixed(3)}`;
+
+      renderTab2();
+    }
+
+    function renderTab2() {
+      const ctx = canvas2.getContext('2d');
+      const w = canvas2.width, h = canvas2.height, scale = 85;
+      ctx.clearRect(0, 0, w, h);
+      drawAxes(ctx, w, h, scale, orbit2, 1.5);
+
+      const A = { x: 0.13, y: 0.25, z: 0.99 };
+      const B = {
+        x: parseFloat(document.getElementById('t2-x').value),
+        y: parseFloat(document.getElementById('t2-y').value),
+        z: parseFloat(document.getElementById('t2-z').value)
+      };
+
+      const pO = project3D(0, 0, 0, w, h, scale, orbit2);
+      const pA = project3D(A.x, A.y, A.z, w, h, scale, orbit2);
+      const pB = project3D(B.x, B.y, B.z, w, h, scale, orbit2);
+
+      // Línea de Distancia Euclidiana
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(pA.px, pA.py); ctx.lineTo(pB.px, pB.py); ctx.stroke();
+      ctx.restore();
+
+      // Vector A
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(pO.px, pO.py); ctx.lineTo(pA.px, pA.py); ctx.stroke();
+      ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(pA.px, pA.py, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('Vector A', pA.px + 8, pA.py - 6);
+
+      // Vector Comparado
+      ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(pO.px, pO.py); ctx.lineTo(pB.px, pB.py); ctx.stroke();
+      ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(pB.px, pB.py, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(`Comparado [${B.x.toFixed(2)}, ${B.y.toFixed(2)}, ${B.z.toFixed(2)}]`, pB.px + 8, pB.py + 14);
+    }
+
+    // --- PESTAÑA 3: COORDENADAS PARALELAS ND ---
+    const dimNames = ['x₁ Vivo', 'x₂ Domést.', 'x₃ Tamaño', 'x₄ Tecnol.', 'x₅ Veloc.', 'x₆ Acuát.', 'x₇ Pelaje', 'x₈ Metal', 'x₉ Voz', 'x₁₀ Autón.'];
+    const vecPerro = [0.95, 0.90, 0.45, -0.80, 0.50, -0.70, 0.90, -0.95, 0.75, 0.85];
+    const vecGato  = [0.95, 0.85, 0.25, -0.80, 0.60, -0.85, 0.92, -0.95, 0.50, 0.90];
+    const vecAuto  = [-0.95, 0.10, 0.80, 0.95, 0.90, -0.90, -0.95, 0.95, 0.60, -0.40];
+
+    function updateTab3() {
+      const n = parseInt(document.getElementById('nd-slider').value, 10);
+      document.getElementById('nd-count').textContent = `${n}D (${n} coordenadas)`;
+
+      const canvas = document.getElementById('canvas-tab3');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const padX = 55, padY = 35;
+      const usableW = w - padX * 2;
+      const usableH = h - padY * 2;
+
+      // Dibujar ejes verticales paralelos
+      for (let i = 0; i < n; i++) {
+        const x = padX + (usableW * i) / (n - 1);
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x, padY); ctx.lineTo(x, h - padY); ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(dimNames[i], x, h - 10);
+      }
+
+      const drawProfile = (arr, color, width) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const x = padX + (usableW * i) / (n - 1);
+          const y = padY + ((1 - arr[i]) / 2) * usableH;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        for (let i = 0; i < n; i++) {
+          const x = padX + (usableW * i) / (n - 1);
+          const y = padY + ((1 - arr[i]) / 2) * usableH;
+          ctx.fillStyle = color;
+          ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      };
+
+      drawProfile(vecAuto, '#fb7185', 2);
+      drawProfile(vecGato, '#34d399', 2.5);
+      drawProfile(vecPerro, '#38bdf8', 3);
+
+      // Calcular distancias en N dimensiones
+      let sumAB = 0, sumAC = 0;
+      for (let i = 0; i < n; i++) {
+        sumAB += Math.pow(vecPerro[i] - vecGato[i], 2);
+        sumAC += Math.pow(vecPerro[i] - vecAuto[i], 2);
+      }
+      document.getElementById('nd-metrics').textContent =
+        `En ${n}D → Distancia(Perro, Gato) = ${Math.sqrt(sumAB).toFixed(2)} | Distancia(Perro, Auto) = ${Math.sqrt(sumAC).toFixed(2)}`;
+    }
+
+    // --- PESTAÑA 4: PROYECTOR 200D A 3D ---
+    let currentAlg = 'PCA';
+    const orbit4 = createOrbitState(-0.35, 0.5);
+    const canvas4 = document.getElementById('canvas-tab4');
+    attachOrbit(canvas4, orbit4, renderTab4);
+
+    const cloudData = [
+      { word: 'computer', group: 'tech', pca: [-0.6, 0.5, 0.3], tsne: [-0.9, 0.8, 0.7], umap: [-0.8, 0.7, 0.5] },
+      { word: 'software', group: 'tech', pca: [-0.4, 0.3, 0.1], tsne: [-0.85, 0.75, 0.65], umap: [-0.75, 0.65, 0.45] },
+      { word: 'network',  group: 'tech', pca: [-0.2, 0.4, -0.2], tsne: [-0.95, 0.82, 0.6], umap: [-0.85, 0.72, 0.4] },
+      { word: 'dog',      group: 'anim', pca: [0.2, 0.2, -0.1], tsne: [0.85, 0.75, -0.6], umap: [0.75, 0.65, -0.5] },
+      { word: 'cat',      group: 'anim', pca: [0.3, 0.1, 0.2], tsne: [0.9, 0.7, -0.55], umap: [0.8, 0.6, -0.45] },
+      { word: 'wolf',     group: 'anim', pca: [0.1, -0.1, -0.3], tsne: [0.8, 0.82, -0.65], umap: [0.7, 0.72, -0.55] },
+      { word: 'argentina',group: 'pais', pca: [0.1, -0.5, 0.4], tsne: [0.1, -0.9, 0.8], umap: [0.1, -0.8, 0.7] },
+      { word: 'brazil',   group: 'pais', pca: [-0.1, -0.4, 0.2], tsne: [0.18, -0.85, 0.75], umap: [0.15, -0.75, 0.65] },
+      { word: 'japan',    group: 'pais', pca: [0.4, -0.3, 0.5], tsne: [0.05, -0.95, 0.85], umap: [0.05, -0.85, 0.75] }
+    ];
+
+    function setAlgTab4(alg) {
+      currentAlg = alg;
+      ['PCA', 'TSNE', 'UMAP'].forEach(a => {
+        document.getElementById('alg-' + a.toLowerCase()).className = (a === alg)
+          ? 'px-2.5 py-1 text-xs rounded-md bg-sky-600 text-white font-semibold'
+          : 'px-2.5 py-1 text-xs rounded-md text-slate-300';
+      });
+      const badge = document.getElementById('alg-badge');
+      const desc = document.getElementById('alg-desc');
+      const coords = document.getElementById('proj-coords');
+
+      if (alg === 'PCA') {
+        badge.textContent = 'Varianza: ~21%';
+        desc.innerHTML = '<strong>PCA</strong> proyecta una "sombra lineal" de las 200 dimensiones sobre 3 ejes. Es instantáneo, pero los grupos se ven más mezclados.';
+        coords.textContent = 'X (PC1): -0.60 | Y (PC2): 0.50 | Z (PC3): 0.30';
+      } else if (alg === 'TSNE') {
+        badge.textContent = 'Vecindad Local';
+        desc.innerHTML = '<strong>t-SNE</strong> calcula quién es vecino de quién en las 200 dimensiones reales y agrupa los clústeres de forma compacta en 3D.';
+        coords.textContent = 'X (t-SNE1): -0.90 | Y (t-SNE2): 0.80 | Z (t-SNE3): 0.70';
+      } else {
+        badge.textContent = 'Topología Global';
+        desc.innerHTML = '<strong>UMAP</strong> equilibra la agrupación de vecinos cercanos con las distancias globales entre categorías distintas.';
+        coords.textContent = 'X (UMAP1): -0.80 | Y (UMAP2): 0.70 | Z (UMAP3): 0.50';
+      }
+      renderTab4();
+    }
+
+    function renderTab4() {
+      const ctx = canvas4.getContext('2d');
+      const w = canvas4.width, h = canvas4.height, scale = 120;
+      ctx.clearRect(0, 0, w, h);
+      drawAxes(ctx, w, h, scale, orbit4, 1.15);
+
+      const colors = { tech: '#38bdf8', anim: '#34d399', pais: '#f59e0b' };
+      cloudData.forEach(item => {
+        const c = currentAlg === 'PCA' ? item.pca : (currentAlg === 'TSNE' ? item.tsne : item.umap);
+        const p = project3D(c[0], c[1], c[2], w, h, scale, orbit4);
+        ctx.fillStyle = colors[item.group];
+        ctx.beginPath(); ctx.arc(p.px, p.py, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = '12px monospace';
+        ctx.fillText(item.word, p.px + 8, p.py + 4);
+      });
+    }
+
+    // --- CAMBIO DE PESTAÑAS ---
+    function switchTab(num) {
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`tab-${i}`).classList.toggle('hidden', i !== num);
+        document.getElementById(`tab-btn-${i}`).className = (i === num)
+          ? 'tab-active px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 transition'
+          : 'bg-slate-800 text-slate-300 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 transition';
+      }
+      if (num === 1) updateTab1();
+      if (num === 2) updateTab2();
+      if (num === 3) updateTab3();
+      if (num === 4) renderTab4();
+    }
+
+    // Inicialización
+    updateTab1();
+    updateTab2();
+    updateTab3();
+    renderTab4();
+  </script>
+</body>
+</html>
